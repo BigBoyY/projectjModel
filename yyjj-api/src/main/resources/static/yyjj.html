@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">
+    *{margin:0;padding: 0;}
+    .hovertree{
+        width: 120px;
+        height: 180px;
+        margin: 150px auto 0;
+        position: relative;
+        /*transform 旋转元素*/
+        transform-style:preserve-3d;
+        transform:perspective(800px) rotateX(-10deg) rotateY(0deg);
+    }
+    body{background-color: #66677c;}
+
+    .hovertree img{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px #fff;
+        /*倒影的设置*/
+        -webkit-box-reflect:below 10px -webkit-linear-gradient(top,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%);
+    }
+    .hovertree p{
+        width: 1200px;
+        height: 1200px;
+        background: -webkit-radial-gradient(center center,600px 600px,rgba(255,255,255,.5),rgba(0,0,0,0));
+        position: absolute;
+        top:100%;left:50%;
+        margin-top: -600px;
+        margin-left: -600px;
+        border-radius:600px;
+        transform:rotateX(90deg);
+    }
+    .hewenqi{position:absolute;z-index:99;}
+    a{color:blue;}
+</style>
+<script type="text/javascript">
+	
+
+</script>
+</head>
+<body>
+
+<div class="hovertree">
+    <img src=""/>
+    <img src="" />
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>
+    <img src=""/>  
+    <p></p>
+</div>
+
+<script src="js/jquery.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function(){
+   
+	var imgL=$(".hovertree img").size();
+	var deg=360/imgL;
+	var roY=0,roX=0;
+ 	var xN=0,yN=0;
+ 	var play=null;
+	var time = null;
+	var roZ = 0;
+	var perspective = 800;
+	var scaleX =1;
+	var scaleY =1;
+	var count = 0;
+ $(".hovertree img").each(function (i,img) {
+    $(this).css({
+        //<!--translateZ 定义2d旋转沿着z轴-->
+        "transform":"rotateY("+i*deg+"deg) translateZ(300px)"    });
+        //<!--防止图片被拖拽-->
+        $(this).attr('ondragstart','return false');
+        $.ajax({
+        	type: 'GET',
+        	async: false,
+            url: 'picture/image',
+            success: function (data) {  
+            	
+                $(img).attr('src',data);
+            }
+          });
+      
+    });
+ $(document).on("mousewheel DOMMouseScroll", function (e) {
+	    
+	    var delta = (e.originalEvent.wheelDelta && (e.originalEvent.wheelDelta > 0 ? 1 : -1)) ||  // chrome & ie
+	                (e.originalEvent.detail && (e.originalEvent.detail > 0 ? -1 : 1));              // firefox
+
+	    
+	    if (delta > 0) {
+	        // 向上滚
+	        console.log("wheelup");
+	       // roZ -= 10;
+	       scaleX+=0.05;
+	       scaleY+=0.05;
+	        $('.hovertree').css({	
+	        	//transform:"scale("+scale+")",
+	            transform:"perspective("+perspective+"px) rotateX("+roX+"deg) rotateY("+roY+"deg)  scale("+scaleX+","+scaleY+")"
+	       });
+	    } else if (delta < 0) {
+	        // 向下滚
+	        console.log("wheeldown");
+	       // roZ += 10;
+	       scaleX-=0.05;
+	       scaleY-=0.05;
+	        $('.hovertree').css({	 
+	        	//transform:"scale("+scale+")",
+	            transform:"perspective("+perspective+"px) rotateX("+roX+"deg) rotateY("+roY+"deg) scale("+scaleX+","+scaleY+")"
+	       });
+	    }
+	});
+ 
+ 	$(document).mousedown(function(ev){
+ 		clearInterval(time);
+	    var x_=ev.clientX;
+	    var y_=ev.clientY;
+	    clearInterval(play);
+	        console.log('我按下了');
+	        $(this).bind('mousemove',function(ev){
+	            /*获取当前鼠标的坐标*/
+	            var x=ev.clientX;
+	            var y=ev.clientY;
+	            /*两次坐标之间的距离*/
+	              xN=x-x_;
+	              yN=y-y_;
+
+	             roY+=xN*0.2;
+	            roX-=yN*0.1;
+	            console.log('移动 '+roY+" " +roX);
+	            //$('body').append('<div style="width:5px;height:5px;position:absolute;top:'+y+'px;left:'+x+'px;background-color:red"></div>');				
+	            $('.hovertree').css({
+		            transform:"perspective("+perspective+"px) rotateX("+roX+"deg) rotateY("+roY+"deg)  scale("+scaleX+","+scaleY+")"
+	            });
+	            /*之前的鼠标坐标*/
+	         x_=ev.clientX;
+	         y_=ev.clientY;
+
+	        });
+	    }).mouseup(function(){
+	          $(this).unbind('mousemove');
+	          var play=setInterval(function(){
+	           
+	           xN*=0.95;
+	           yN*=0.95
+	           if(Math.abs(xN)<1 && Math.abs(yN)<1){
+	              clearInterval(play);
+	           }
+	            roY+=xN*0.2;
+	            roX-=yN*0.1;
+	            count++;
+	            if(count==3){
+	            	repalce(roY);
+	            	count=0;
+	        	}
+	            $('.hovertree').css({
+		            transform:"perspective("+perspective+"px) rotateX("+roX+"deg) rotateY("+roY+"deg)  scale("+scaleX+","+scaleY+")"
+	            });
+	          },30);
+	          time = setInterval(rotate,30);
+	    });
+    
+ 	time = setInterval(rotate,30);
+    function rotate(){
+ 		roY+=0.3;
+        //roX-=0.01;
+       // console.log('移动 '+roY+" " +roX);
+        count++;
+        if(count==3){
+        	repalce(roY);
+        	count=0;
+    	}
+ 		$('.hovertree').css({ 			
+            transform:"perspective("+perspective+"px) rotateX("+roX+"deg) rotateY("+roY+"deg)  scale("+scaleX+","+scaleY+")"
+       });
+ 	};
+   function repalce(roY) {
+	   var Y= parseInt(roY);
+	   if(Y >= 0){
+		   Y+=144;
+		   if(Y % 36 == 0){
+				  var a =  Y % 360;
+				  var b =  a / 36;
+				  $(".hovertree img").each(function (index,document) {
+					  
+					 // console.log("图片id"+index+"Y % 360==="+ a+"图片位置"+Math.abs(b));
+					  if(index == 9-Math.abs(b)){
+						 // console.log(i);
+						 $.ajax({
+					        	type: 'GET',
+					            url: 'picture/image',					            
+					            success: function (data) { 
+					            	
+					            	
+					            	 $(document).attr("src",data);  
+					         	 }
+					  })
+				  }
+			   })
+	  		 }
+		   }else if(Y < 0){
+		   Y-=180;
+		   if(Y % 36 == 0){
+				  var a =  Y % 360;
+				  var b =  a / 36;
+				  $(".hovertree img").each(function (index,document) {
+					  
+					  //console.log("图片id"+index+"Y % 360==="+ a+"图片位置"+Math.abs(b));
+					  if(index == Math.abs(b)){
+						 // console.log(i);
+						   $.ajax({
+					        	type: 'GET',					        
+					            url: 'picture/image',
+					            success: function (data) { 					            						            	
+					            	 $(document).attr("src",data);  
+					          }
+						   })
+					  }
+				  })
+			   }
+	   }
+   }
+});
+</script>
+<div style="text-align:center;margin:250px 0; font:normal 14px/24px 'MicroSoft YaHei';">
+</div>
+</body>
+</html>

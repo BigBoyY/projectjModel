@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.yyjj</groupId>
+  <artifactId>home</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>2.1.8.RELEASE</version>
+	<relativePath/> <!-- lookup parent from repository -->
+  </parent>
+  
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+    <home.name>yyjj</home.name> 
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  	
+  	<java.version>1.8</java.version>
+  	<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+  	<skipTests>true</skipTests>
+  	
+  	<mybatis-spring.version>1.3.2</mybatis-spring.version>
+  	<mybatis-plus.version>3.2.0</mybatis-plus.version>
+  	<smart-doc.version>1.7.0</smart-doc.version>
+  	<!-- <smart-doc.version>1.7.3</smart-doc.version> -->
+  </properties>
+  <modules>
+  	<module>yyjj-api</module>
+  	<module>yyjj-authority</module>
+  	<module>yyjj-db</module>
+  	<module>yyjj-domain</module>
+  	<module>yyjj-service</module>
+  </modules>
+</project>

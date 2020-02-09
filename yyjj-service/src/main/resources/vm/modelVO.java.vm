@@ -1,0 +1,62 @@
+package com.oudot.asset.manage.api.VO.resource;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.beans.BeanUtils;
+
+import java.io.Serializable;
+
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author yml
+ * 
+ */
+@Getter
+@Setter
+public class ${model}VO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    
+     
+    public static  ${model}VO newInstance( ${model}  ${lowerModel}) {
+        if(Objects.isNull( ${lowerModel})) {
+  	    return null;
+  	  }        
+         ${model}VO  ${lowerModel}VO = new  ${model}VO();
+        BeanUtils.copyProperties( ${lowerModel},  ${lowerModel}VO);
+        return  ${lowerModel}VO;
+  	}
+    
+    public static  ${model}VO newInstance( ${model}BO  ${lowerModel}) {
+        if(Objects.isNull( ${lowerModel})) {
+  	    return null;
+  	  }        
+         ${model}VO  ${lowerModel}VO = new  ${model}VO();
+        BeanUtils.copyProperties( ${lowerModel},  ${lowerModel}VO);
+        return  ${lowerModel}VO;
+  	}
+  	    
+  	public  ${model} convert() {
+  		 ${model}  ${lowerModel} = new  ${model}();
+  	  BeanUtils.copyProperties(this,  ${lowerModel});
+  	  return  ${lowerModel};
+  	}
+  	
+  	public  ${model}BO  ${model}BO() {
+  		 ${model}BO  ${lowerModel} = new  ${model}BO();
+  	  BeanUtils.copyProperties(this,  ${lowerModel});
+  	  return  ${lowerModel};
+  	}
+  	
+  }

@@ -1,0 +1,25 @@
+package com.oudot.asset.manage.service.bo;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.oudot.asset.manage.db.model.${module}.${model};
+import com.oudot.asset.manage.service.bo.base.IBaseBO;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ${model}BO implements IBaseBO<${model}>{
+	
+	@Override
+	public void accpet(QueryWrapper<${model}> queryWrapper) {
+		
+	}
+	
+	public  ${model} convert() {
+  		 ${model}  ${lowerModel} = new  ${model}();
+  	  BeanUtils.copyProperties(this,  ${lowerModel});
+  	  return  ${lowerModel};
+  	}
+}
+    

@@ -1,0 +1,685 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+
+<style>
+@import url(https://fonts.googleapis.com/css?family=Lato:900);
+		
+*, *:after, *:before {
+  
+	box-sizing: border-box; 
+	
+}
+
+html {
+
+	width: 100%;
+	height: 100%;
+	
+	overflow: hidden;
+
+}
+		
+body {
+		
+	-webkit-user-select:none;
+	-moz-user-select:none;
+			
+}
+
+.tweets {
+			
+	width: 100%;
+	height: auto;
+			
+	position: absolute;
+				
+	top: calc(80% - 50px);
+	left: 0;
+				
+	margin: 0;
+			
+	font-size: 1.4em;
+				
+	z-index: 1;
+				
+}
+			
+.mentions {
+			
+	color: rgb(200, 200, 200);
+			
+	font-family: 'Lato';
+	text-align: center;
+				
+	padding-left: 5px;
+				
+}</style>
+</head>
+<body>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/dat.gui.min.js"></script>
+
+
+<div class = "tweets"><p class = "mentions"></p></div>
+
+
+<script type="text/javascript">
+;$(function($) {
+		
+	var canvas, context, audioContext, buffer, particles = [], tweets, mouse = { x: -99999, y: -99999 }, line = [{ x: 0, y: 0 }], type = ['circle', 'rumble'], nextTweet = 0, isLoading = explosion = true, input = release = played = false, lastDownload = $.now(), FPS = 60;
+	
+	/*
+	 * Custom tween.
+	 */
+	
+	var tween = { 
+		
+		x: Math.random() * innerWidth, 
+		y: Math.random() * innerWidth 
+		
+	}, target;
+	
+	/*
+	 * List colors.
+	 */ 
+	
+	var colors = [
+
+		'#0f628b',
+    '#ccdff0',
+    '#66ebff',
+    '#ffffff',
+    '#f0ff00'
+    
+  ];
+	
+	/*
+ 	* Init.
+	 */
+	
+	function init() {
+		
+		var body = document.querySelector('body');
+		
+		canvas = document.createElement('canvas');
+					
+    canvas.width = innerWidth;
+		canvas.height = innerHeight;
+		
+    canvas.style.background = '-webkit-radial-gradient(#17cbcb, #018181)';
+    canvas.style.background = '-moz-radial-gradient(#17cbcb, #018181)';
+    canvas.style.background = '-ms-radial-gradient(#17cbcb, #018181)';
+    canvas.style.background = '-o-radial-gradient(#17cbcb, #018181)';
+    canvas.style.background = 'radial-gradient(#17cbcb, #018181)';
+    
+		canvas.style.position = 'absolute';
+		canvas.style.top = 0;
+		canvas.style.bottom = 0;
+		canvas.style.left = 0;
+		canvas.style.right = 0;
+		canvas.style.zIndex = -1;
+		
+    body.appendChild(canvas);
+
+		// Browser supports canvas?
+		if(!!(capable)) {
+		
+			context = canvas.getContext('2d');
+		
+			// Events
+			if('ontouchmove' in window) {
+			
+				document.addEventListener('touchstart', self.onTouchStart, false);
+				document.addEventListener('touchmove', self.onTouchMove, false);
+				
+			}
+			
+			else {
+			
+				document.addEventListener('mousedown', onMouseDown, false);
+				document.addEventListener('mousemove', onMouseMove, false);
+				
+			}
+			
+			window.onresize = onResize;
+			
+			// Todo
+			preloadAudio();
+			createParticles();
+		
+		}
+		
+		else {
+		
+			console.error('Sorry, your browser sucks :(');
+		
+		}
+        
+	}
+	
+	/*
+	 * Checks if browser supports canvas element.
+	 */
+	
+	function capable() {
+	
+		return canvas.getContext && canvas.getContext('2d');
+	
+	}
+	
+	/*
+	 * On resize window event.
+	 */
+	
+	function onResize() {
+	
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	
+	}
+	
+	/*
+	 * Mouse down event.
+	 */
+	
+	function onMouseDown(event) {
+	
+		event.preventDefault();
+		
+		mouse.x = event.pageX - canvas.offsetLeft;
+		mouse.y = event.pageY - canvas.offsetTop;
+		
+		restoreDefault();
+	
+	}
+	
+	/*
+	 * Mouse move event.
+	 */
+	
+	function onMouseMove(event) {
+	
+		event.preventDefault();
+		
+		mouse.x = event.pageX - canvas.offsetLeft;
+		mouse.y = event.pageY - canvas.offsetTop;    
+	 
+	}
+	
+	/*
+	 * Touch start event.
+	 */
+	
+	function onTouchStart(event) {
+	
+		event.preventDefault();
+	
+		mouse.x = event.touches[0].pageX - canvas.offsetLeft;
+		mouse.y = event.touches[0].pageY - canvas.offsetTop;
+		
+		restoreDefault();
+		
+	}
+	
+	/*
+	 * Touch move event.
+	 */
+	
+	function onTouchMove(event) {
+	
+		event.preventDefault();
+	
+		mouse.x = event.touches[0].pageX - canvas.offsetLeft;
+		mouse.y = event.touches[0].pageY - canvas.offsetTop;
+		
+	}
+	
+	/*
+	 * Handle the animation on click/touch event.
+	 */
+	
+	function restoreDefault() {
+	
+		if(!release)
+		
+			return;
+		
+		if(!input && release) {
+		
+			tween.x = mouse.x;
+			tween.y = mouse.y;
+			
+			line = [{ x: 0, y: 0 }];
+			
+			target = randomBetween(0, particles.length - 1);								
+			explosion = input = true;
+			
+			played = false;
+				
+			[].forEach.call(particles, function(particle, index) {
+		
+				particle.radius = particle.copyRadius;
+			
+			});
+			
+		}
+	
+	}
+	
+	/*
+	 * Get the audio file via Ajax.
+	 */
+	
+	function preloadAudio() {
+
+		try {
+		
+			audioContext = new (window.AudioContext || window.webkitAudioContext)();
+			var request = new XMLHttpRequest();
+		
+      request.open('GET', 'http://francescotrillini.it/assets/pop.ogg', true);
+			request.responseType = 'arraybuffer';
+
+			request.onload = function() {
+		
+				audioContext.decodeAudioData(request.response, function(chunk) {
+			
+					buffer = chunk;
+                
+				}, function() {
+				
+					$.error('Failed to get audio file :(');
+			
+				});
+			
+			};
+
+			request.send();
+			
+		}
+		
+		catch(Exception) {
+		
+			alert("Your browser doesn't support Web Audio API. Try with Safari or Chrome.");
+		
+		}
+		
+	}
+	
+	/*
+	 * Create particles.
+	 */
+	
+	function createParticles() {
+			
+		for(var particle = 0, len = 100; particle < len; particle++) {
+			
+				var x, y, shape, radius;
+			
+			x = canvas.width * 0.5;
+			y = canvas.height * 0.5;
+				
+			shape = type[~~(Math.random() * type.length)];
+			radius = shape === 'circle' ? randomBetween(1, 6) : randomBetween(1, 6) * 2;
+			
+			particles.push({
+				
+				x: x,
+				y: y,
+				goalX: x,
+				goalY: y,
+				centerX: (innerWidth || canvas.width) * 0.5 + 180 * Math.pow(Math.sin(particle), 3),
+				centerY: 250 + 10 * ( - (15 * Math.cos(particle) - 5 * Math.cos(2 * particle) - 2 * Math.cos(3 * particle) - Math.cos(4 * particle))),
+					
+				vx: 0,
+				vy: 0,
+				
+				radius: radius,
+				copyRadius: radius,
+				towardsRadius: shape === 'circle' ? 80 : 140,
+				color: colors[~~(Math.random() * colors.length)],
+				alpha: 0.0,
+				
+				orbit: 5,
+				speed: 0.06 + Math.random() * 0.08,
+				angle: 0,
+				
+				type: shape
+				
+			});
+				
+		}
+			
+		target = randomBetween(0, particles.length - 1);	
+			
+		loop();
+	
+	}
+	
+	/*
+	 * Download tweets.
+	 */
+	
+	function downloadTweets() {
+								
+		// Schedule every 60 secs
+		if(tweets === undefined || $.now() - lastDownload > 60000) { 
+			
+			// Reset the array, and re-fill again with newest tweets
+			tweets = [];
+			
+			$.getJSON('http://francescotrillini.it/assets/oauth/index.php', function(data) {
+           
+				for(var tweet = 0, limit = 100; tweet < limit; tweet++)
+		 
+					tweets.push(data.statuses[tweet]);
+           
+			});
+			
+			lastDownload = $.now();
+		
+		}
+	
+	}
+	
+	/*
+	 * Load a random tweet.
+	 */
+	
+	function loadTweet(color) {
+	
+		var tweet = tweets[nextTweet % tweets.length];
+		
+		// Wait a moment...still loading
+		if(tweet !== undefined) {
+							
+			var text = tweet.text.replace(/http:\/\/(\S+)/, "<a href = \"http://$1\">http://$1</a>");
+			text = text.replace(/@(\S+)/, "<a href = \"https://twitter.com/$1\">@$1</a>");
+
+			if(release)
+			
+				$('.tweets').html('<p class = "mentions">' + text + ' by ' + '<a href = "https://twitter.com/' + tweet.user.screen_name + '"> ' + tweet.user.screen_name + '</a>' + '</p>');
+
+			else
+							
+				release = true;
+				
+			isLoading = false;
+			
+			nextTweet += 1;
+			
+			canvas.style.cursor = 'pointer';
+							
+		}
+
+		$('a').css({
+		
+			'color': color,
+			'text-decoration': 'none',
+			'font-size': '1.7em'
+		
+		});
+		
+	}
+	
+	/*
+	 * Play the audio.
+	 */
+	
+	function play() {
+	
+		var source = audioContext.createBufferSource(); 
+		
+		source.playbackRate.value = 0.2 + Math.random() * 0.8;
+		source.gain.value = 0.1;
+		source.buffer = buffer;
+		source.connect(audioContext.destination);
+		source.noteOn(0);
+			
+	}
+	
+	/*
+	 * Loop logic.
+	 */
+	
+	function loop() {
+		         
+		downloadTweets();
+		
+		// If it's the first time, load automatically a random tweet
+		if(isLoading)
+		
+			loadTweet();
+			
+		clear();
+		update();
+		render();
+	
+		requestAnimFrame(loop);
+		
+	}
+	
+	/*
+	 * Clear the whole screen.
+	 */
+	 
+	function clear(alpha) {
+		
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		
+	}
+	
+	/*
+	 * Update the particles.
+	 */
+	
+	function update() {
+			
+		var particle = particles[target];
+	
+		if(explosion) {
+				
+			while(line.length < 20) {
+			  
+                 line.push({ x: tween.x, y: tween.y });
+				
+			} 
+                
+            line.shift();
+
+			if(input || release) {
+			
+				tween.x += (particle.x - tween.x) * 0.1; 
+				tween.y += (particle.y - tween.y) * 0.1; 
+			
+			}	
+
+			if(distanceTo(tween, particle) < 5) {
+								
+				if(!played) {
+					
+					try {
+						
+						play();
+								
+					}
+							
+					catch(Exception) {}
+							
+					loadTweet(particle.color);
+							
+					played = true;
+							
+				}
+		
+				particle.radius += (particle.towardsRadius - particle.radius) * 0.2;
+			
+				if(Math.round(particle.radius) === Math.round(particle.towardsRadius))
+					
+					// Enable input
+					explosion = input = false;	
+			
+			}		
+				
+		}
+		
+		particles.forEach(function(particle, index) {  
+				
+			var ease = 0.01, friction = 0.93;		 	
+			
+			// Velocity
+			particle.x += particle.vx;
+			particle.y += particle.vy;
+			
+			// Rotation
+			particle.x = particle.centerX + Math.cos(index + particle.angle) * particle.orbit;
+			particle.y = particle.centerY + Math.sin(index + particle.angle) * particle.orbit;
+			
+			particle.angle += particle.speed;
+			
+			// Ease
+			particle.vx += ((innerWidth || canvas.width) * 0.5 + 180 * Math.pow(Math.sin(index), 3) - particle.centerX) * ease;
+			particle.vy += (250 + 10 * ( - (15 * Math.cos(index) - 5 * Math.cos(2 * index) - 2 * Math.cos(3 * index) - Math.cos(4 * index))) - particle.centerY) * ease;
+				
+			// Friction
+			particle.vx *= friction;
+			particle.vy *= friction;
+				
+			particle.centerX += particle.vx;
+			particle.centerY += particle.vy;
+			
+		});
+			
+	}
+	
+	/*
+	 * Render the particles.
+	 */
+	
+	function render() {
+		
+		context.save();
+		context.beginPath();
+         
+		[].forEach.call(line, function(point, index) {
+		
+			var currentPoint = line[index];
+            var nextPoint = line[index+1];
+                        
+            if(index === 0) 
+                              
+				context.moveTo(currentPoint.x + (nextPoint.x - currentPoint.x) * 0.5, currentPoint.y + (nextPoint.y - currentPoint.y) * 0.5);
+                        
+            else if(nextPoint)
+                               
+				context.quadraticCurveTo(currentPoint.x, currentPoint.y, currentPoint.x + (nextPoint.x - currentPoint.x) * 0.5, currentPoint.y + (nextPoint.y - currentPoint.y) * 0.5);
+                       
+		});
+                
+		context.lineWidth = 0.1;
+		context.shadowColor = '#ffffff';
+		context.shadowBlur = 1;
+        context.strokeStyle = '#ffffff';				
+        context.stroke();
+		context.restore();	
+		
+		[].forEach.call(particles, function(particle, index) {  
+			
+			if(index !== target) {
+			
+				context.save();
+				context.globalCompositeOperation = 'lighter';
+				context.globalAlpha = 1.0;
+				context.translate(particle.x, particle.y);
+				context.rotate(45 * Math.PI / 180);
+				context.fillStyle = particle.color;
+				context.beginPath();
+				particle.type === 'circle' ? context.arc(-2, -2, particle.radius, 0, Math.PI * 2) : context.rect(particle.radius / -2, particle.radius / -2, particle.radius, particle.radius);
+				context.closePath();
+				context.fill();
+				context.restore();
+				
+			}
+			
+		});	
+		
+		[].forEach.call(particles, function(particle, index) {  
+			
+			// Render the target particle on top of stack
+			if(index === target) {
+			
+				context.save();
+				context.globalAlpha = 1.0;
+				context.translate(particle.x, particle.y);
+				context.rotate(45 * Math.PI / 180);
+				context.fillStyle = particle.color;
+				context.beginPath();
+				particle.type === 'circle' ? context.arc(-2, -2, particle.radius, 0, Math.PI * 2) : context.rect(particle.radius / -2, particle.radius / -2, particle.radius, particle.radius);
+				context.closePath();
+				context.fill();
+				context.restore();
+				
+			}
+			
+		});	
+		
+	}
+	
+	/*
+	 * Distance between two points.
+	 */
+	
+	function distanceTo(pointA, pointB) {
+	
+		var dx = Math.abs(pointA.x - pointB.x);
+		var dy = Math.abs(pointA.y - pointB.y);
+		
+		return Math.sqrt(dx * dx + dy * dy);
+	
+	}
+	
+	/*
+	 * Useful function for random integer between [min, max].
+	 */
+	
+	function randomBetween(min, max) {
+	
+		return ~~(Math.random() * (max - min + 1) + min);
+
+	}
+	
+	/*
+	 * Request new frame by Paul Irish.
+	 * 60 FPS.
+	 */
+	
+	window.requestAnimFrame = (function() {
+	 
+		return  window.requestAnimationFrame       || 
+				window.webkitRequestAnimationFrame || 
+				window.mozRequestAnimationFrame    || 
+				window.oRequestAnimationFrame      || 
+				window.msRequestAnimationFrame     || 
+			  
+				function(callback) {
+			  
+					window.setTimeout(callback, 1000 / FPS);
+				
+				};
+			  
+    })();
+
+	window.addEventListener ? window.addEventListener('load', init, false) : window.onload = init;
+	
+})(jQuery);
+</script>
+
+<div style="text-align:center;margin:5px 0; font:normal 14px/24px 'MicroSoft YaHei';">
+
+</div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+spring:
+  profiles:
+    active: dev
+  jmx: 
+    enabled: false
+  jackson: 
+    time-zone: GMT+8
+    default-property-inclusion: NON_NULL
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  servlet:
+    multipart: 
+      max-file-size: 30MB
+      max-request-size: 40MB
+  aop:
+    auto: true
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+
+upload:
+  fileLibraryPath: /usr/local/static/resource/
+  ip: 106.14.14.206 
+  staticPath: http://${upload.ip}/
+  fileStaticPath: resource/${server.servlet.context-path}/   
+  visitPath: ${upload.staticPath}/${server.servlet.context-path}
+--- 
+spring:
+  resources:
+    static-locations: file:${upload.fileLibraryPath},classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,classpath:file:${upload.fileLibraryPath}/
+  profiles: dev
+  
+  datasource:
+    url: jdbc:mysql://106.14.14.204:3306/yyjj?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2b8&autoReconnect=true
+    username: root
+    password: yyjj1314
+    driver-class-name: com.mysql.cj.jdbc.Driver
+server:
+  port: 8080
+  compression:
+    enabled: true  
+  tomcat.max-threads: 0  
+  tomcat.uri-encoding: UTF-8 
+  servlet:
+    context-path: /yyjj    
+logging:
+  level:
+    com.oudot.asset.manage: DEBUG
+--- 
+spring:
+  resources:
+    static-locations: file:${upload.fileLibraryPath},classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,classpath:file:${upload.fileLibraryPath}/
+  profiles: test
+  datasource:
+    url: jdbc:mysql://106.14.14.204:3306/yyjj?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2b8&autoReconnect=true
+    username: root
+    password: yyjj1314
+    driver-class-name: com.mysql.cj.jdbc.Driver  
+  redis:
+      # Redis数据库索引（默认为0）
+      database: 0
+      # Redis服务器地址
+      host: localhost
+      # Redis服务器连接端口
+      port: 6379
+  # Redis服务器连接密码（默认为空）
+      password: 
+      timeout: 1000
+server:  
+  port: 8080
+  tomcat.max-threads: 0  
+  servlet:
+    context-path: /yyjj
+    session:
+      timeout: PT2H
+  tomcat.uri-encoding: UTF-8 
+   
+upload:
+  fileLibraryPath: D:/etc/upload
+  visitPath: http://106.14.14.204:8080/yyjj
+logging:
+  level:
+    com.oudot.asset.manage: DEBUG 
+    
+--- 
+spring:
+  profiles: pro
+
+server:  
+  port: 8080
+  tomcat.max-threads: 0  
+  tomcat.uri-encoding: UTF-8 
+  servlet:
+    context-path: /yyjj
+
+      
+logging:
+  level:
+    com.oudot.asset.manage: INFO

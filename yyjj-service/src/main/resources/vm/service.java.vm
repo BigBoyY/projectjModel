@@ -1,0 +1,8 @@
+package ${package};
+
+import ${modelPackage};
+import com.oudot.asset.manage.service.base.IBaseService;
+
+public interface ${model}Service extends IBaseService<${model}>{
+
+}
