@@ -89,7 +89,7 @@
 	     <dependency>
          <groupId>org.apache.poi</groupId>
 	         <artifactId>poi-ooxml</artifactId>
-	         <version>3.10-FINAL</version>
+	         <version>5.4.0</version>
      	 </dependency>
 		<!-- 接口文档生成工具 -->
 		<dependency>
